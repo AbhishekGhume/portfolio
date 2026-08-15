@@ -5,13 +5,6 @@ import { Mail, Terminal, ArrowUp } from 'lucide-react';
 import { Github, Linkedin, LeetCode } from '../icons/BrandIcons.jsx';
 import { EMAIL } from '../../data/links.js';
 
-const SOCIALS = [
-  { icon: Mail, href: `mailto:${EMAIL}`, label: 'Email' },
-  { icon: Linkedin, href: 'https://www.linkedin.com/in/abhishekghume/', label: 'LinkedIn' },
-  { icon: LeetCode, href: 'https://leetcode.com/u/ghumeabhi04/', label: 'LeetCode' },
-  { icon: Github, href: 'https://github.com/AbhishekGhume', label: 'GitHub' },
-];
-
 const Footer = () => {
   const currentYear = new Date().getFullYear();
 
@@ -36,27 +29,6 @@ const Footer = () => {
             {/* The address itself, readable and selectable — a mailto: icon alone
                 is a dead end for visitors with no mail app configured, which on
                 desktop is most of them. */}
-            <a
-              href={`mailto:${EMAIL}`}
-              className='mt-4 inline-flex items-center gap-2 font-mono text-sm text-slate-300 transition-colors hover:text-brand-300'
-            >
-              <Mail size={15} className='text-brand-400' />
-              {EMAIL}
-            </a>
-            <div className='mt-5 flex items-center gap-2.5'>
-              {SOCIALS.map(social => (
-                <a
-                  key={social.label}
-                  href={social.href}
-                  target={social.href.startsWith('http') ? '_blank' : undefined}
-                  rel={social.href.startsWith('http') ? 'noopener noreferrer' : undefined}
-                  aria-label={social.label}
-                  className='flex h-10 w-10 items-center justify-center rounded-lg border border-hairline bg-surface text-slate-400 transition-colors hover:border-brand-500/40 hover:text-brand-300'
-                >
-                  <social.icon size={18} />
-                </a>
-              ))}
-            </div>
           </div>
         </div>
 

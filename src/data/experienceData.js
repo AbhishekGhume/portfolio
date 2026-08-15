@@ -23,4 +23,22 @@ export const EXPERIENCE_DATA = [
     experience: '6 months',
     delay: 0.1,
   },
+
+  {
+    period: 'August 2026 - Present',
+    title: 'Trainee Developer',
+    company: 'Capita',
+    location: 'Pune, India',
+    logo: `${import.meta.env.BASE_URL}Capita.png`,
+    description:
+      'Software development and technology training focused on building practical solutions while developing skills in C# and Microsoft Azure.',
+    achievements: [
+      'Developing software engineering skills through hands-on training in C# and Microsoft Azure.',
+      'Learning to design, develop, and maintain applications using modern development practices and cloud technologies.',
+      'Working collaboratively in a professional technology environment while strengthening problem-solving, debugging, and software development skills.',
+    ],
+    tech: ['C#', 'Microsoft Azure'],
+    experience: 'Current',
+    delay: 0.2,
+  }
 ];
