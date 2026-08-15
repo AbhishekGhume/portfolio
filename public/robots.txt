@@ -1,0 +1,10 @@
+# robots.txt for a GitHub Pages project site. Note: crawlers only honour
+# robots.txt at the domain root (abhishekghume.github.io/robots.txt), which a
+# project site can't control — this file is served under /portfolio/ and is
+# best-effort. The Sitemap directive still works because sitemap locations
+# may be absolute URLs anywhere.
+
+User-agent: *
+Allow: /
+
+Sitemap: https://abhishekghume.github.io/portfolio/sitemap.xml

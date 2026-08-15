@@ -1,0 +1,194 @@
+/**
+ * @file App.jsx
+ * @author Abhishek
+ * @copyright © 2025 Abhishek. All rights reserved.
+ * @description Main application component with routing and modular architecture
+ */
+
+import React, { useEffect, lazy, Suspense } from 'react';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { MotionConfig } from 'motion/react';
+import Navigation from './components/Navigation.jsx';
+import LoadingSpinner from './components/LoadingSpinner.jsx';
+import {
+  HeroSection,
+  AboutSection,
+  ApproachBand,
+  ExperienceSection,
+  SkillsSection,
+  ProjectsSection,
+  TechnologiesSection,
+  Footer,
+} from './components/sections';
+import {
+  ErrorBoundary,
+  SectionErrorBoundary,
+  GlobalErrorHandler,
+} from './components/ErrorBoundary/';
+import ScrollProgress from './components/ScrollProgress.jsx';
+import useRouteMeta from './hooks/useRouteMeta.js';
+
+// Off-home routes are split into their own chunks — most visitors only ever
+// see the home page, so the legal pages and 404 shouldn't ride in the
+// first-paint bundle. They load on demand when their route is hit.
+const PrivacyPolicy = lazy(() => import('./components/PrivacyPolicy.jsx'));
+const TermsConditions = lazy(() => import('./components/TermsConditions.jsx'));
+const NotFound = lazy(() => import('./components/NotFound.jsx'));
+
+const getBasename = () => import.meta.env.BASE_URL || '/';
+
+const HomePage = () => {
+  return (
+    <div className='relative'>
+      <SectionErrorBoundary sectionName='Hero'>
+        <HeroSection />
+      </SectionErrorBoundary>
+
+      <SectionErrorBoundary sectionName='About'>
+        <AboutSection />
+      </SectionErrorBoundary>
+
+      <SectionErrorBoundary sectionName='Approach'>
+        <ApproachBand />
+      </SectionErrorBoundary>
+
+      <SectionErrorBoundary sectionName='Experience'>
+        <ExperienceSection />
+      </SectionErrorBoundary>
+
+      <SectionErrorBoundary sectionName='Skills'>
+        <SkillsSection />
+      </SectionErrorBoundary>
+
+      <SectionErrorBoundary sectionName='Projects'>
+        <ProjectsSection />
+      </SectionErrorBoundary>
+
+      <SectionErrorBoundary sectionName='Technologies'>
+        <TechnologiesSection />
+      </SectionErrorBoundary>
+
+      <SectionErrorBoundary sectionName='Footer'>
+        <Footer />
+      </SectionErrorBoundary>
+    </div>
+  );
+};
+
+// When we land on a hashed URL (e.g. /#projects from the 404 page, the footer,
+// or an external link), the target section may not exist yet at the moment the
+// hash is set. Wait for it via rAF, then scroll with the fixed-header offset.
+// Pathname is a dependency so navigating away and back to the home route with a
+// hash re-triggers the scroll.
+//
+// Because this runs on every hash change, it — not `scroll-padding-top` — is
+// what decides where a hash lands, on a cold load as much as an in-app one.
+// Keep HEADER_OFFSET in step with the constant of the same name in
+// usePageTransitions.js and `scroll-padding-top` in index.css; all three
+// describe the same fixed header, and this is the one that actually applies.
+const HEADER_OFFSET = 80;
+
+const useHashScroll = () => {
+  const { pathname, hash } = useLocation();
+
+  useEffect(() => {
+    if (!hash) return undefined;
+    let raf = 0;
+    const attempt = (tries = 0) => {
+      const el = document.getElementById(hash.slice(1));
+      if (el) {
+        window.scrollTo({ top: el.offsetTop - HEADER_OFFSET, behavior: 'smooth' });
+      } else if (tries < 20) {
+        raf = requestAnimationFrame(() => attempt(tries + 1));
+      }
+    };
+    raf = requestAnimationFrame(() => attempt());
+    return () => cancelAnimationFrame(raf);
+  }, [pathname, hash]);
+};
+
+const Layout = ({ children }) => {
+  useHashScroll();
+  // Keeps <title>, canonical and the description in step on client-side
+  // navigations. The served HTML for each route is already correct — see
+  // scripts/vite-plugin-route-pages.js — but a SPA navigation never fetches it.
+  useRouteMeta();
+
+  return (
+    <div className='min-h-screen bg-ink text-slate-300'>
+      {/* Skip link — first focusable element on the page. Visually hidden until
+          focused, then anchors keyboard/screen-reader users straight to the
+          main content, past the nav. Pairs with the <main id> landmark below. */}
+      <a
+        href='#main-content'
+        className='sr-only rounded-lg bg-brand-500 px-4 py-2 font-medium text-ink focus-visible:not-sr-only focus-visible:fixed focus-visible:left-4 focus-visible:top-4 focus-visible:z-[100]'
+      >
+        Skip to content
+      </a>
+
+      <ScrollProgress />
+
+      <ErrorBoundary level='component' fallbackComponent='Navigation'>
+        <Navigation />
+      </ErrorBoundary>
+
+      <main id='main-content'>{children}</main>
+    </div>
+  );
+};
+
+// Main App Component with Routing
+const App = () => {
+  return (
+    // reducedMotion="user" makes every motion/react component respect the OS
+    // "reduce motion" setting — animations render instantly for users who asked
+    // for it (the CSS media query only covers CSS animations, not the JS-driven
+    // ones). Outermost so even the ErrorBoundary fallback UI inherits it.
+    <MotionConfig reducedMotion='user'>
+      <GlobalErrorHandler>
+        <ErrorBoundary level='app' fallbackComponent='Portfolio Application'>
+          <Router
+            basename={getBasename()}
+            future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+          >
+            <Layout>
+              <Suspense
+                fallback={<LoadingSpinner size='lg' text='Loading…' className='min-h-screen' />}
+              >
+                <Routes>
+                  <Route path='/' element={<HomePage />} />
+                  <Route
+                    path='/privacy'
+                    element={
+                      <ErrorBoundary level='page' fallbackComponent='Privacy Policy'>
+                        <PrivacyPolicy />
+                      </ErrorBoundary>
+                    }
+                  />
+                  <Route
+                    path='/terms'
+                    element={
+                      <ErrorBoundary level='page' fallbackComponent='Terms & Conditions'>
+                        <TermsConditions />
+                      </ErrorBoundary>
+                    }
+                  />
+                  <Route
+                    path='*'
+                    element={
+                      <ErrorBoundary level='page' fallbackComponent='404 Page'>
+                        <NotFound />
+                      </ErrorBoundary>
+                    }
+                  />
+                </Routes>
+              </Suspense>
+            </Layout>
+          </Router>
+        </ErrorBoundary>
+      </GlobalErrorHandler>
+    </MotionConfig>
+  );
+};
+
+export default App;

@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Abhishek — Fresher Software Engineer</title>
+    <meta
+      name="description"
+      content="Abhishek is a Software Engineer in Pune, India, building backend systems, automation workflows, and AI-powered applications with Java, Spring Boot, REST APIs, databases, and cloud platforms."
+    />
+    <meta
+      name="keywords"
+      content="fresher software engineer, software engineer, backend engineer, java, spring boot, rest apis, automation workflows, ai-powered applications, databases, cloud platforms, pune"
+    />
+    <meta name="author" content="Abhishek Ghume" />
+    <link rel="canonical" href="https://abhishekghume.github.io/portfolio/" />
+
+    <!-- Structured Data (JSON-LD).
+         `alumniOf` is deliberately absent: the site publishes no education
+         anywhere, and structured data that isn't on the page is the kind of
+         claim Google treats as spam. Only facts stated in the visible content
+         belong here. -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Person",
+        "name": "Abhishek Ghume",
+        "jobTitle": "Software Engineer",
+        "description": "Software engineer building backend systems, automation workflows, and AI-powered applications with Java, Spring Boot, REST APIs, databases, and cloud platforms. Based in Pune, India.",
+        "url": "https://abhishekghume.github.io/portfolio/",
+        "image": "https://abhishekghume.github.io/portfolio/og-image.png",
+        "email": "mailto:ghumeabhi04@gmail.com",
+        "sameAs": ["https://github.com/AbhishekGhume", "https://www.linkedin.com/in/abhishekghume/"],
+        "address": {
+          "@type": "PostalAddress",
+          "addressLocality": "Pune",
+          "addressCountry": "IN"
+        },
+        "knowsAbout": [
+          "Software Engineering",
+          "Backend Development",
+          "Java",
+          "Spring Boot",
+          "REST APIs",
+          "Automation Workflows",
+          "AI-Powered Applications",
+          "Databases",
+          "Cloud Platforms"
+        ]
+      }
+    </script>
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://abhishekghume.github.io/portfolio/" />
+    <meta property="og:title" content="Abhishek — Fresher Software Engineer" />
+    <meta
+      property="og:description"
+      content="Building backend systems, automation workflows, and AI-powered applications. Based in Pune, India."
+    />
+    <meta property="og:image" content="https://abhishekghume.github.io/portfolio/og-image.png" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Abhishek — Fresher Software Engineer" />
+
+    <!-- Twitter. These take `name`, not `property` — the two families come from
+         different specs. Open Graph is RDFa, where the attribute is `property`;
+         Twitter cards are plain HTML metadata, where it is `name`. Twitter's own
+         crawler happens to accept either, but other consumers that read
+         twitter:* tags don't all have that fallback. -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content="https://abhishekghume.github.io/portfolio/" />
+    <meta name="twitter:title" content="Abhishek — Fresher Software Engineer" />
+    <meta
+      name="twitter:description"
+      content="Building backend systems, automation workflows, and AI-powered applications. Based in Pune, India."
+    />
+    <meta name="twitter:image" content="https://abhishekghume.github.io/portfolio/og-image.png" />
+    <meta name="twitter:image:alt" content="Abhishek — Fresher Software Engineer" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!-- Fonts load non-render-blocking: the stylesheet is fetched as `print`
+         (low priority, doesn't block first paint) then flipped to `all` once
+         loaded. `display=swap` already avoids invisible text, so the page
+         paints immediately in the system fallback and swaps to the webfonts
+         when ready. <noscript> keeps it working with JS disabled. Weights are
+         trimmed to those actually used (Inter dropped unused 300 & 800). -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap"
+      rel="stylesheet"
+      media="print"
+      onload="this.media = 'all'"
+    />
+    <noscript>
+      <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap"
+        rel="stylesheet"
+      />
+    </noscript>
+
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <meta name="theme-color" content="#060a13" />
+    <style>
+      /* Pre-paint background so the first frame is the dark canvas, not white
+         (avoids a flash before the CSS bundle loads). */
+      html {
+        background-color: #060a13;
+        scroll-behavior: smooth;
+      }
+      body {
+        overflow-x: hidden;
+      }
+
+      @media (max-width: 768px) {
+        /* Prevent iOS auto-zoom on input focus */
+        input,
+        textarea,
+        select {
+          font-size: 16px !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+
+    <script type="module" src="/src/main.jsx"></script>
+
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-LH6QJZSFJR"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+      gtag('js', new Date());
+      gtag('config', 'G-LH6QJZSFJR', {
+        page_title: 'Abhishek Portfolio',
+        page_location: window.location.href,
+      });
+    </script>
+
+  </body>
+</html>

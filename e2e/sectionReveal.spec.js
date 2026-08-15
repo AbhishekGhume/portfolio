@@ -1,0 +1,82 @@
+
+import { test, expect } from '@playwright/test';
+
+test.beforeEach(async ({ page }) => {
+  await page.route(/googletagmanager\.com|google-analytics\.com|chatwoot|widget/i, r => r.abort());
+});
+
+const SECTIONS = ['about', 'experience', 'skills', 'projects', 'technologies'];
+
+/** Laid-out descendants, and how many of them are still fully transparent. */
+const measure = el => {
+  const rendered = [...el.querySelectorAll('*')].filter(e => e.getBoundingClientRect().height > 0);
+  return {
+    rendered: rendered.length,
+    hidden: rendered.filter(e => parseFloat(getComputedStyle(e).opacity) < 0.05).length,
+  };
+};
+
+/** Poll until nothing is hidden, or the reveal budget runs out. */
+const settle = async (section, budgetMs = 5000) => {
+  const deadline = Date.now() + budgetMs;
+  let counts = await section.evaluate(measure);
+  while (counts.hidden > 0 && Date.now() < deadline) {
+    await section.page().waitForTimeout(100);
+    counts = await section.evaluate(measure);
+  }
+  return counts;
+};
+
+test('every section reveals its content once scrolled into view', async ({ page }) => {
+  await page.setViewportSize({ width: 1400, height: 900 });
+  await page.goto('/', { waitUntil: 'load' });
+
+  const stillHidden = [];
+
+  for (const id of SECTIONS) {
+    const section = page.locator(`#${id}`);
+    await section.scrollIntoViewIfNeeded();
+    await expect(section).toBeVisible();
+
+    const counts = await settle(section);
+
+    // A section that rendered nothing would trivially report zero hidden nodes.
+    expect(counts.rendered, `#${id} rendered no laid-out content at all`).toBeGreaterThan(10);
+    if (counts.hidden > 0)
+      stillHidden.push(`#${id}: ${counts.hidden}/${counts.rendered} at opacity 0`);
+  }
+
+  expect(
+    stillHidden,
+    `sections never revealed — useInView is likely not firing:\n  ${stillHidden.join('\n  ')}`
+  ).toEqual([]);
+});
+
+test('the assertion above fails when the observer never fires', async ({ page }) => {
+  // Guards the guard. Neutering IntersectionObserver reproduces exactly the
+  // regression this file exists to catch, so if the reveal test can pass with a
+  // dead observer, it is not testing anything.
+  await page.addInitScript(() => {
+    window.IntersectionObserver = class {
+      observe() {}
+      unobserve() {}
+      disconnect() {}
+      takeRecords() {
+        return [];
+      }
+    };
+  });
+
+  await page.setViewportSize({ width: 1400, height: 900 });
+  await page.goto('/', { waitUntil: 'load' });
+
+  const section = page.locator('#technologies');
+  await section.scrollIntoViewIfNeeded();
+  await expect(section).toBeVisible();
+
+  const counts = await settle(section, 2000);
+  expect(
+    counts.hidden,
+    'a no-op IntersectionObserver left nothing hidden — the reveal test cannot fail'
+  ).toBeGreaterThan(0);
+});

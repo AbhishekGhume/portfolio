@@ -1,0 +1,165 @@
+
+
+import { createHash } from 'node:crypto';
+import { readFileSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
+
+/** Third-party origins the page legitimately talks to. */
+const GTM = 'https://www.googletagmanager.com';
+const FONTS_CSS = 'https://fonts.googleapis.com';
+const FONTS_FILES = 'https://fonts.gstatic.com';
+// Cloudflare Web Analytics. The proxy injects this script into every HTML
+// response, so it is not optional here — without it the beacon is blocked and
+// analytics silently collects nothing.
+//
+// The trailing slash is load-bearing. Cloudflare's own docs say to allowlist
+// `…/beacon.min.js`, but the real src is `…/beacon.min.js/<version-hash>`, and a
+// CSP path with no trailing slash must match the URL path *exactly*. Verified
+// against the live beacon URL in Chromium: the documented form is blocked, this
+// one is allowed. Scoped to the path rather than the whole origin so the grant
+// covers only the beacon.
+const CF_BEACON = 'https://static.cloudflareinsights.com/beacon.min.js/';
+// The beacon POSTs its RUM payload here (XHR to /cdn-cgi/rum), on the apex
+// hostname rather than the static. one it is served from.
+const CF_BEACON_RUM = 'https://cloudflareinsights.com';
+// GA4 spreads telemetry across regional subdomains (region1.google-analytics.com,
+// etc.), so these have to be wildcards.
+const GA_BEACONS = [
+  'https://*.google-analytics.com',
+  'https://*.analytics.google.com',
+  'https://*.googletagmanager.com',
+];
+
+const sha256 = source => `'sha256-${createHash('sha256').update(source, 'utf8').digest('base64')}'`;
+
+/**
+ * Inline <script> bodies, excluding external (src=) and data blocks
+ * (application/ld+json), which CSP does not treat as executable script.
+ */
+export function collectInlineScriptHashes(html) {
+  const hashes = [];
+  // Matched against what the HTML parser actually treats as a script element, not the
+  // narrowest spelling of one — a form this misses means a missing hash, and CSP then
+  // blocks a script the build meant to allow.
+  //   - `i`: tag and attribute names are case-insensitive, so `<SCRIPT>` and `SRC=` count.
+  //   - `[\s>]` after the closing name: `</script >` and `</script foo>` also close the
+  //     element (verified against a real HTML parser), so requiring `>` immediately would
+  //     run the captured body on past the true end of the script.
+  const scriptTag = /<script([^>]*)>([\s\S]*?)<\/script[\s>]/gi;
+  let match;
+  while ((match = scriptTag.exec(html)) !== null) {
+    const [, attrs, body] = match;
+    if (/\bsrc\s*=/i.test(attrs)) continue;
+    if (/type\s*=\s*["']application\/ld\+json["']/i.test(attrs)) continue;
+    hashes.push(sha256(body));
+  }
+  return hashes;
+}
+
+/**
+ * Inline event-handler attributes (e.g. the font stylesheet's
+ * `onload="this.media = 'all'"`). These need 'unsafe-hashes' alongside the hash —
+ * without it, a hash never authorises an attribute handler.
+ */
+export function collectEventHandlerHashes(html) {
+  const hashes = new Set();
+  // All three attribute-value forms the parser accepts — double-quoted, single-quoted and
+  // unquoted (confirmed against a real parser). Matching only `"…"` would leave a
+  // single-quoted handler unhashed, and CSP would then block it.
+  const handler = /\son[a-z]+\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'>]+))/gi;
+  let match;
+  while ((match = handler.exec(html)) !== null) {
+    hashes.add(sha256(match[1] ?? match[2] ?? match[3]));
+  }
+  return [...hashes];
+}
+
+export function buildCsp(html) {
+  const scriptHashes = collectInlineScriptHashes(html);
+  const handlerHashes = collectEventHandlerHashes(html);
+
+  const directives = {
+    'default-src': ["'self'"],
+    // Hashes cover the gtag bootstrap. Presence of a hash makes browsers ignore
+    // 'unsafe-inline', so it is deliberately absent here.
+    'script-src': [
+      "'self'",
+      ...scriptHashes,
+      ...(handlerHashes.length ? ["'unsafe-hashes'", ...handlerHashes] : []),
+      GTM,
+      CF_BEACON,
+    ],
+    // 'unsafe-inline' is a considered trade-off: index.html has a pre-paint
+    // <style> block. Style injection is a far weaker primitive than script
+    // injection, and script-src stays strict. (React's style={{…}} writes go
+    // through CSSOM, which CSP does not police, so those are unaffected either
+    // way.)
+    'style-src': ["'self'", "'unsafe-inline'", FONTS_CSS],
+    'img-src': ["'self'", 'data:', 'https:'],
+    'font-src': ["'self'", 'data:', FONTS_FILES],
+    'connect-src': ["'self'", ...GA_BEACONS, CF_BEACON_RUM],
+    'frame-src': ["'self'"],
+    'object-src': ["'none'"],
+    'base-uri': ["'self'"],
+    'form-action': ["'self'"],
+    'frame-ancestors': ["'none'"],
+    'upgrade-insecure-requests': [],
+  };
+
+  return Object.entries(directives)
+    .map(([directive, values]) => (values.length ? `${directive} ${values.join(' ')}` : directive))
+    .join('; ');
+}
+
+export function buildHeadersFile(html) {
+  return `# Generated by scripts/vite-plugin-security-headers.js — do not edit by hand.
+# Applies to static asset responses only; worker.js sets its own headers on /api/*.
+
+/*
+  Content-Security-Policy: ${buildCsp(html)}
+  Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=()
+  Cross-Origin-Opener-Policy: same-origin
+
+# Content-hashed filenames, so these are safe to cache indefinitely.
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Icons and the social card. Not content-hashed — /og-image.png is a fixed URL
+# published in the meta tags, so it can't be — but they change roughly never, and
+# without a rule they inherit the max-age=0 above and revalidate on every single
+# fetch. A day is short enough that a regenerated card propagates the same day
+# and long enough to stop every scraper paying a round trip. Deliberately not
+# marked immutable: these URLs are stable, so a stale copy must be able to expire.
+/og-image.png
+  Cache-Control: public, max-age=86400
+/og-image.svg
+  Cache-Control: public, max-age=86400
+/favicon.svg
+  Cache-Control: public, max-age=86400
+/favicon-32.png
+  Cache-Control: public, max-age=86400
+/apple-touch-icon.png
+  Cache-Control: public, max-age=86400
+`;
+}
+
+export default function securityHeaders() {
+  let outDir = 'dist';
+  return {
+    name: 'security-headers',
+    // Run last so the HTML we hash is the final emitted output.
+    enforce: 'post',
+    apply: 'build',
+    configResolved(config) {
+      outDir = join(config.root, config.build.outDir);
+    },
+    closeBundle() {
+      const html = readFileSync(join(outDir, 'index.html'), 'utf8');
+      writeFileSync(join(outDir, '_headers'), buildHeadersFile(html), 'utf8');
+    },
+  };
+}

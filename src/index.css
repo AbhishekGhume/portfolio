@@ -1,0 +1,685 @@
+@import 'tailwindcss';
+
+/*
+  Dark "systems-engineer" theme.
+  Canvas: deep navy. Signature accent: emerald→cyan.
+  Display: Space Grotesk. Body: Inter. Technical labels: JetBrains Mono.
+  Tailwind v4 ships slate/emerald/cyan/zinc by default — we lean on those and
+  add only a few brand conveniences here so classNames stay portable.
+*/
+@theme {
+  /* Brand accent aliases (emerald → cyan). Kept as `brand-*` so intent reads
+     clearly in markup; values track Tailwind's emerald ramp. */
+  --color-brand-50: #ecfdf5;
+  --color-brand-100: #d1fae5;
+  --color-brand-200: #a7f3d0;
+  --color-brand-300: #6ee7b7;
+  --color-brand-400: #34d399;
+  --color-brand-500: #10b981;
+  --color-brand-600: #059669;
+  --color-brand-700: #047857;
+  --color-brand-800: #065f46;
+  --color-brand-900: #064e3b;
+
+  /* Surface scale — hand-tuned navy so cards separate from the canvas without
+     looking gray. ink = page background, surface = card, elevated = hover. */
+  --color-ink: #060a13;
+  --color-canvas: #0a0f1c;
+  --color-surface: #0f1626;
+  --color-surface-2: #131c2e;
+  --color-elevated: #1a2437;
+  --color-hairline: #1e2a40;
+
+  --font-sans: Inter, system-ui, sans-serif;
+  --font-display: 'Space Grotesk', Inter, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --animate-aurora: aurora 16s ease-in-out infinite;
+  --animate-marquee: marquee 40s linear infinite;
+  --animate-pulse-slow: pulseSlow 3s ease-in-out infinite;
+  --animate-text-shimmer: textShimmer 6s ease-in-out infinite;
+  --animate-cube-tumble: cubeTumble 30s linear infinite;
+
+  @keyframes aurora {
+    0%,
+    100% {
+      transform: translate3d(0, 0, 0) scale(1);
+    }
+    33% {
+      transform: translate3d(12%, -8%, 0) scale(1.15);
+    }
+    66% {
+      transform: translate3d(-10%, 10%, 0) scale(0.9);
+    }
+  }
+  @keyframes marquee {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-50%);
+    }
+  }
+  @keyframes pulseSlow {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.45;
+    }
+  }
+  /* Slow tumble on both axes. Start and end are the same orientation +360° on
+     each axis, so the loop is seamless with no visible seam or snap. Linear
+     because any easing reads as a pulse over a 30s cycle. The
+     prefers-reduced-motion still is set separately on .cube-shell — this
+     keyframe's frame 0 is not what a reduced-motion visitor sees. */
+  @keyframes cubeTumble {
+    0% {
+      transform: rotateX(-22deg) rotateY(18deg);
+    }
+    100% {
+      transform: rotateX(338deg) rotateY(378deg);
+    }
+  }
+  /* A highlight glint sweeps left→right across a gradient text fill, then
+     rests off-screen for most of the cycle. Drives background-position, so it
+     only shows on an element whose background is oversized (see the utility). */
+  @keyframes textShimmer {
+    0%,
+    45%,
+    100% {
+      background-position: 150% 0;
+    }
+    70% {
+      background-position: -50% 0;
+    }
+  }
+}
+
+/* Tailwind v4 changed the default border color to `currentColor`; pin it to a
+   navy hairline so borders read consistently across the dark UI. */
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-hairline);
+  }
+
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    /* Keep in step with HEADER_OFFSET in usePageTransitions.js and the same
+       constant in App.jsx's useHashScroll. Those two intercept every hash we
+       currently produce — nav clicks and cold-loaded hashed URLs alike — and
+       scroll manually, so this declaration governs nothing today: raising it to
+       300px in a built stylesheet moved neither path, while raising the JS
+       offset to 300 moved both. What's left for it is find-in-page and
+       focus-driven scrolls, plus every hash path added from here on.
+
+       It sat at 88px against their 80px. Not a visible bug, then, but three
+       constants describing one 80px fixed header with one of them disagreeing —
+       and the one that disagreed is the fallback, so the drift would only have
+       surfaced the day something stopped going through the JS. */
+    scroll-padding-top: 80px;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    @apply font-sans text-slate-300 antialiased;
+    background-color: var(--color-ink);
+    overflow-x: hidden;
+    min-height: 100dvh;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-display tracking-tight text-white;
+  }
+
+  /* Accessible, on-brand focus ring for keyboard users. */
+  *:focus-visible {
+    outline: 2px solid var(--color-brand-400);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  ::selection {
+    background: rgb(16 185 129 / 0.25);
+    color: #fff;
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: var(--color-ink);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-elevated);
+    border-radius: 999px;
+    border: 2px solid var(--color-ink);
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #26324a;
+  }
+}
+
+@utility container-custom {
+  @apply max-w-6xl mx-auto px-5 sm:px-8 lg:px-8;
+}
+
+@utility section-padding {
+  @apply py-24 lg:py-32;
+}
+
+/* Eyebrow label: mono, uppercase, tracked — the recurring "technical" motif.
+   Carries no colour of its own: the six numbered eyebrows get their hue from
+   SectionHeader's ACCENTS map, and baking a default in here too would make the
+   result depend on which of the two classes Tailwind happened to emit last.
+   The consequence is that a bare `eyebrow` renders slate — so every use site
+   must pair it with a text-* class. */
+@utility eyebrow {
+  @apply inline-flex items-center gap-2 font-mono text-xs font-medium uppercase tracking-[0.2em];
+}
+
+/* Card surface used across every section for a single, coherent card system. */
+@utility card-surface {
+  background-color: var(--color-surface);
+  @apply rounded-2xl border border-hairline;
+}
+
+/* Hover elevation for the card system. One utility, so every content card in
+   every section lifts identically — each section previously spelled out its own
+   ad-hoc hover classes and they had already drifted (About used
+   hover:border-brand-500/30, everything else hover:border-slate-600).
+
+   Uses the `translate` property rather than `transform`: motion/react writes the
+   composed transform to the element's inline style (and emits `transform: none`
+   at rest), which would override a class-based transform. `translate` is a
+   separate property, so the two compose instead of fighting.
+
+   4px and no scale — a scale resamples the card text mid-transition and nudges
+   neighbouring cards out of optical alignment in the multi-column grids. */
+@utility card-lift {
+  transition-property: translate, box-shadow, border-color, background-color;
+  transition-duration: 300ms;
+  transition-timing-function: var(--ease-out);
+}
+
+/* Scoped to `hover: hover` so a tap on a touch device doesn't leave the card
+   stuck in its lifted state, and to `no-preference` because the global reduce
+   block below only zeroes the transition *duration* — it can't remove the 4px
+   displacement itself, and an element jumping under the pointer is exactly what
+   a visitor asking for less motion is asking us not to do. */
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .card-lift:hover {
+    translate: 0 -4px;
+    border-color: var(--color-slate-600);
+    background-color: var(--color-surface-2);
+    box-shadow: 0 12px 28px -12px rgb(0 0 0 / 0.55);
+  }
+}
+
+@utility gradient-text {
+  @apply bg-linear-to-r from-brand-300 via-emerald-200 to-cyan-300 bg-clip-text text-transparent;
+}
+
+/* Living variant of gradient-text: same emerald→cyan fill, plus a soft white
+   highlight band that sweeps across every few seconds. The band is baked into
+   an oversized (200%) background so animating background-position slides it
+   through; at rest it parks off the right edge and reads identically to
+   gradient-text. Reserved for the hero headline so it stays a single accent. */
+@utility gradient-text-shimmer {
+  background-image: linear-gradient(
+    110deg,
+    #6ee7b7 0%,
+    #6ee7b7 30%,
+    #ffffff 45%,
+    #a7f3d0 55%,
+    #67e8f9 75%,
+    #67e8f9 100%
+  );
+  background-size: 200% 100%;
+  background-position: 150% 0;
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  animation: var(--animate-text-shimmer);
+}
+
+/* Faint dotted-grid texture for section backgrounds. */
+@utility grid-bg {
+  background-image: radial-gradient(rgb(148 163 184 / 0.07) 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+
+/* ---------------------------------------------------------------------------
+   Die map — the hero backdrop.
+
+   A chip floorplan whose tiles light up as activation drifts across it. It
+   replaces a flat dotted grid, against which the hero read as static: two
+   screenshots of that build at different animation phases differed in 3.5% of
+   subpixels at a max delta of 23/255. The aurora *was* moving; there was just
+   nothing on screen with enough structure to show it. Giving the light a
+   lattice to fall on is what makes the same motion legible — measured on the
+   backdrop alone, the grid layer went from 0.00% of subpixels changing to
+   36.08%, without a single new animation.
+
+   How it works. The three aurora glows above it in AnimatedMeshGradient are the
+   light; these layers paint an OPAQUE grid of channels, in the page's own ink
+   colour, on top of them. Light survives only in the square holes between the
+   channels, so tiles appear to switch on and off as a glow drifts past while the
+   lattice itself never moves. The grid is what is static and the light is what
+   moves — swap that round and the tiles slide with the glow, which reads as
+   drifting texture rather than a chip.
+
+   Nothing here animates, and that is the point. Commit f5613cb deleted ~370
+   lines of decorative rAF loops from this repo for hurting scroll performance,
+   and TumblingCube.jsx:8-15 records two more measured passes; anything
+   decorative has to clear that bar. Three versions of this layer did not, all
+   measured at 1400x900 against main's 50 fps while scrolling the hero:
+
+     tile mask + 2 moving glows                    22 fps
+     opaque grid painted over 2 moving glows       30 fps
+     same, glows shrunk to aurora size             40 fps
+     opaque grid over the auroras already there    (this)
+
+   The first version's cost was the mask: with the glows removed it ran at 50,
+   with the mask removed at 23, and with the mask present but the glows static at
+   28 — Chrome renders a masked subtree into an intermediate surface on every
+   composited frame. Painting opaque ink over the glows instead removed that
+   surface and bought 8 fps.
+
+   The rest was the glows themselves. CDP confirmed both were properly
+   composited ("active accelerated transform animation") — they were just far too
+   large: 3080x1980 = 6.1Mpx each, against 745x745 = 0.56Mpx for the biggest
+   aurora, and the fps recovered monotonically as they shrank. But even at aurora
+   size two extra animating layers still cost 11 fps, while main's *three*
+   auroras cost nothing, because they were already on screen and already
+   composited. So the fix was to add no animating layer at all and let the
+   auroras be the activation. The die map is now three static, never-repainted
+   divs; the motion is the drift that the hero already had.
+
+   A pleasant consequence: no mask means no mask-composite: intersect, which
+   Chrome only shipped in 120 while Tailwind v4's baseline is 111.
+   --------------------------------------------------------------------------- */
+
+@utility die-map {
+  /* Tile pitch, and how much of that pitch is tile rather than channel. Both
+     die-grid and die-lines derive from these, so the channels and the hairlines
+     agree by construction instead of by two numbers being kept in step by hand.
+     Channel width is the remainder, step - fill: 5px here, 4px on small screens.
+
+     overflow:hidden is not for the children — they are all inset:0 — but so the
+     repeating gradients cannot paint past a rounded or clipped ancestor. */
+  --die-step: 26px;
+  --die-fill: 21px;
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+
+  @media (width < 48rem) {
+    --die-step: 20px;
+    --die-fill: 16px;
+  }
+}
+
+/* The opaque channel grid. Two repeating gradients of solid ink, so the gaps
+   between them are the tiles. Sits above the glows and below nothing — the
+   aurora and vignette are later siblings of .die-map and still paint on top.
+
+   The colour has to be the exact page background, not a translucent black: at
+   any alpha below 1 the glow shows through the channels too and the tiles stop
+   having edges, which is the whole effect. */
+@utility die-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    repeating-linear-gradient(
+      to right,
+      var(--color-ink) 0 calc(var(--die-step) - var(--die-fill)),
+      transparent calc(var(--die-step) - var(--die-fill)) var(--die-step)
+    ),
+    repeating-linear-gradient(
+      to bottom,
+      var(--color-ink) 0 calc(var(--die-step) - var(--die-fill)),
+      transparent calc(var(--die-step) - var(--die-fill)) var(--die-step)
+    );
+}
+
+/* Faint hairlines so the die still reads as a die where no glow is passing.
+   Unlit, it is a floorplan; lit, the tiles it outlines light up.
+
+   These carry the whole effect away from the auroras, which is most of the
+   hero — the first version inherited 0.055 alpha from the dotted grid it
+   replaced and the lattice simply vanished outside the top-left corner. Lit
+   tiles are the accent; these are what makes them tiles rather than a stain. */
+@utility die-lines {
+  position: absolute;
+  inset: 0;
+  background-image:
+    repeating-linear-gradient(
+      to right,
+      rgb(148 163 184 / 0.1) 0 1px,
+      transparent 1px var(--die-step)
+    ),
+    repeating-linear-gradient(
+      to bottom,
+      rgb(148 163 184 / 0.1) 0 1px,
+      transparent 1px var(--die-step)
+    );
+}
+
+/* Hold the centre back. The headline and intro sit in a column through the
+   middle of the hero, and a glow passing behind them raises the local
+   background luminance — which Lighthouse cannot catch, because it computes
+   contrast against the CSS background colour and not against the image that
+   actually rendered. Damping the middle keeps measured contrast where it was
+   and puts the activity around the copy rather than under it.
+
+   Tuned against sampled pixels rather than by eye: behind the headline and
+   intro, at 390px and 1400px, worst-case contrast measures 15.6:1 against white
+   and 11.6:1 against the intro's slate-300. The requirement is 4.5:1, so there
+   is a lot of room to soften this if the centre ever reads as too dead. */
+@utility die-center-damp {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    54% 42% at 50% 46%,
+    rgb(6 10 19 / 0.86) 0%,
+    rgb(6 10 19 / 0.48) 60%,
+    transparent 100%
+  );
+}
+
+/* Section seam: a centre-weighted hairline at the top edge so consecutive
+   sections read as deliberately separated panels rather than a hard bg swap.
+   Rendered via a pseudo-element so it never affects layout/padding.
+
+   The seam carries the section's accent (see seam-* below) because it is the
+   only thing marking the boundary at all: the bg-ink/bg-canvas alternation the
+   sections already use measures a 1.035 contrast ratio, which is below the
+   threshold where two greys read as different at all. Tinting the one-pixel
+   edge is what makes the alternation legible without touching the surfaces. */
+@utility section-seam {
+  position: relative;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset-inline: 0;
+    top: 0;
+    height: 1px;
+    background: linear-gradient(
+      to right,
+      transparent,
+      var(--seam-color, var(--color-hairline)) 20%,
+      var(--seam-color, var(--color-hairline)) 80%,
+      transparent
+    );
+  }
+
+  /* Accent wash. The seam alone gave the hue about one pixel of the viewport to
+     work with, which is not enough surface area to actually tell you which
+     section you're in — the thing the accent exists to do. This spreads the same
+     hue over the section's opening, behind the header, at a strength low enough
+     that it reads as the light in the room rather than as a coloured panel. It
+     is also what stops all six openings from looking identical: the surfaces are
+     still the same near-black either way, so the wash is doing that work alone.
+
+     Painted as ::after (last in the box tree, so above ::before and any
+     unlayered background children) but below the `relative z-10` content
+     wrapper every section uses. pointer-events: none so it never eats a click.
+     Defaults to transparent, i.e. an untinted section is exactly as it was. */
+  &::after {
+    content: '';
+    position: absolute;
+    inset-inline: 0;
+    top: 0;
+    height: 380px;
+    pointer-events: none;
+    background: radial-gradient(
+      75% 380px at 50% 0%,
+      var(--seam-glow, transparent),
+      transparent 72%
+    );
+  }
+}
+
+/* Per-section accent tints. Each is a separate literal utility rather than one
+   parameterised class because Tailwind finds classes by scanning source text —
+   a name assembled at runtime is never emitted, and the failure mode is an
+   invisible seam rather than an error. Same constraint as SkillsSection's
+   per-card `edge` values.
+
+   Mixed against transparent rather than hardcoded: a 1px line at full
+   saturation reads as a coloured rule, which is louder than a boundary marker
+   needs to be. ~45% keeps it a tinted hairline, and ~8% keeps the wash below the
+   point where it starts to look like a different background. */
+@utility seam-brand {
+  --seam-color: color-mix(in oklab, var(--color-brand-400) 45%, transparent);
+  --seam-glow: color-mix(in oklab, var(--color-brand-400) 8%, transparent);
+}
+@utility seam-cyan {
+  --seam-color: color-mix(in oklab, var(--color-cyan-400) 45%, transparent);
+  --seam-glow: color-mix(in oklab, var(--color-cyan-400) 8%, transparent);
+}
+@utility seam-indigo {
+  --seam-color: color-mix(in oklab, var(--color-indigo-400) 45%, transparent);
+  --seam-glow: color-mix(in oklab, var(--color-indigo-400) 8%, transparent);
+}
+
+/* ---------------------------------------------------------------------------
+   Tumbling cube (Approach band)
+
+   A 3×3×3 cube built from 26 separate cubies, tumbling as a group while its
+   layers turn on all three axes. Deliberately not WebGL: every turn is one
+   compositor transform with a transition, so it costs no main-thread work per
+   frame and needs no GPU-dependent fallback.
+
+   The gaps between cubies are real gaps — each cubie is its own box in space,
+   not a cell painted onto a flat face plate. That is what lets a layer turn
+   visibly, and what gives the edges something to catch light on. Only the faces
+   on the cube's surface are rendered (54 in total, at most three per cubie); see
+   the cube-cubie comment for why, and what it measured.
+
+   JS only schedules turns (~0.7/sec) and bakes integer state when one lands;
+   see cubePermutation.js. Four earlier passes on this repo removed decorative
+   rAF loops for hurting scroll perf, so nothing here runs per frame.
+   --------------------------------------------------------------------------- */
+
+@utility cube-stage {
+  --cube-size: 200px;
+  --cube-gap: 7px;
+  --cube-turn-ms: 620ms; /* must match TURN_MS in TumblingCube.jsx */
+  --cubie-size: calc((var(--cube-size) - 2 * var(--cube-gap)) / 3);
+  --cubie-half: calc(var(--cubie-size) / 2);
+  /* Centre-to-centre spacing of adjacent cubies. Every cubie's position is an
+     integer multiple of this, so the lattice stays exact at any --cube-size —
+     the same reason the old face offsets had to be a calc() rather than px. */
+  --cubie-step: calc(var(--cubie-size) + var(--cube-gap));
+  position: relative;
+  width: var(--cube-size);
+  height: var(--cube-size);
+  perspective: 1100px;
+
+  @media (width < 48rem) {
+    --cube-size: 140px;
+    --cube-gap: 5px;
+  }
+
+  /* Contact shadow on the ground beneath the cube.
+
+     Deliberately a static blurred ellipse rather than
+     `filter: drop-shadow()` on the stage. drop-shadow traces the *animated*
+     silhouette, so the blur is recomputed every single frame — measured here at
+     51 fps with it versus 60 without, and it was the only thing costing frames
+     (the sticker gradients cost nothing). This pseudo-element never moves, so
+     it rasterises once and then just composites, and at these opacities against
+     the near-black band the two are visually equivalent.
+
+     Sized past 100% because a tumbling cube's corners swing outside the
+     --cube-size footprint — an ellipse matched to the box alone reads as too
+     small and detaches from the cube. */
+  &::before {
+    content: '';
+    position: absolute;
+    z-index: 0;
+    left: 50%;
+    bottom: -16%;
+    translate: -50% 0;
+    width: 108%;
+    height: 20%;
+    border-radius: 50%;
+    background: radial-gradient(ellipse at center, rgb(0 0 0 / 0.9) 0%, transparent 72%);
+    filter: blur(13px);
+  }
+}
+
+@utility cube-shell {
+  position: relative;
+  /* Above the ground shadow painted by .cube-stage::before. */
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  animation: var(--animate-cube-tumble);
+
+  /* The global reduce block below zeroes animation-duration, which does NOT
+     freeze the cube mid-tumble — with no fill-mode the animation completes
+     immediately and the element falls back to its un-animated style. That's
+     `transform: none`, i.e. staring straight down one face, which no longer
+     reads as a cube at all. So pin an explicit three-quarter rest pose, which is
+     what "frozen" should look like. The turn scheduler also returns early under
+     this query, so a reduced-motion visitor gets a still, solved cube. */
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+    transform: rotateX(-24deg) rotateY(34deg);
+  }
+}
+
+/* One cubie, centred on the stage and then translated out to its lattice
+   position by an inline transform (see cubieTransform in the component).
+   `top/left/margin` centre it first so the inline translate3d is measured from
+   the cube's middle, which is what makes the integer coordinates symmetric.
+
+   Only the three faces that can face the camera are rendered as children; the
+   cubie's own dark `background` stands in for the hidden interior. That is a
+   performance decision with a measured basis: rendering all six faces per cubie
+   means 156 composited layers inside one preserve-3d tree, and the compositor
+   sorts and blends every one of them each frame whether or not it is visible.
+   Measured 39.8 fps for 156 faces versus 59.3 for 54 faces plus this
+   background — a 20 fps difference, with flattening the *styling* of the inner
+   faces changing nothing (40.0), which is what proves the cost is per-layer
+   rather than per-pixel. */
+@utility cube-cubie {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: var(--cubie-size);
+  height: var(--cubie-size);
+  margin: calc(var(--cubie-size) / -2);
+  transform-style: preserve-3d;
+  /* Stands in for the unrendered interior faces, so a cubie still reads as a
+     solid block of dark plastic when a turn swings it open. */
+  background: #070c18;
+  border-radius: 5px;
+}
+
+/* A fixed diagonal gradient plus two inset hairlines fake the specular highlight
+   a real light source would give. Because the gradient is painted in each
+   sticker's own (rotating) coordinate space, the sheen sweeps as the cube turns —
+   the part that sells the glossy look without any lighting maths. */
+@utility cube-sticker {
+  position: absolute;
+  inset: 0;
+  border-radius: 5px;
+  background:
+    linear-gradient(
+      150deg,
+      rgb(226 232 240 / 0.16) 0%,
+      rgb(148 163 184 / 0.05) 34%,
+      rgb(2 6 14 / 0.5) 100%
+    ),
+    #0d1424;
+  box-shadow:
+    inset 0 1px 0 rgb(226 232 240 / 0.1),
+    inset 0 -1px 0 rgb(0 0 0 / 0.5);
+  /* Lets the compositor cull a sticker the moment it turns away instead of
+     blending it behind the cube. Worth 9 fps on its own (49.3 → measured), and
+     it is safe here precisely because only outward faces exist: there is no
+     inner face whose backface a viewer could legitimately need to see. */
+  backface-visibility: hidden;
+}
+
+/* Accent stickers, used sparsely — 7 cubies of 26, so the cube stays a dark
+   object catching brand light rather than a coloured toy. */
+@utility cube-sticker-hl {
+  background:
+    linear-gradient(
+      150deg,
+      rgb(226 232 240 / 0.3) 0%,
+      rgb(148 163 184 / 0.09) 40%,
+      rgb(2 6 14 / 0.5) 100%
+    ),
+    #101a2e;
+}
+
+@utility cube-sticker-em {
+  background:
+    linear-gradient(
+      150deg,
+      rgb(16 185 129 / 0.42) 0%,
+      rgb(16 185 129 / 0.1) 55%,
+      rgb(2 6 14 / 0.5) 100%
+    ),
+    #0d1424;
+}
+
+@utility cube-sticker-cy {
+  background:
+    linear-gradient(
+      150deg,
+      rgb(34 211 238 / 0.38) 0%,
+      rgb(34 211 238 / 0.09) 55%,
+      rgb(2 6 14 / 0.5) 100%
+    ),
+    #0d1424;
+}
+
+@layer utilities {
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+/* Cross-fade between routes (privacy / terms / home) via the View Transitions
+   API — opted in per-navigation by `viewTransition` on the route-change Links.
+   A short, symmetric fade reads as a deliberate page swap without delaying the
+   content. Browsers without the API ignore these rules and navigate instantly. */
+@media (prefers-reduced-motion: no-preference) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: 260ms;
+    animation-timing-function: ease;
+  }
+}
