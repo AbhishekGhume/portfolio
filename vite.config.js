@@ -9,7 +9,7 @@ export default defineConfig({
   // Served from a GitHub Pages project site, so every asset URL is prefixed
   // with the repo name. React Router picks this up via import.meta.env.BASE_URL
   // (see getBasename in src/App.jsx).
-  base: '/portfolio/',
+  base: '/',
   // Order matters for two of these. prerenderHero writes the hero copy into the
   // shell (transformIndexHtml). routePages then derives the per-route documents
   // from the *written* dist/index.html in closeBundle, so it has to run after
