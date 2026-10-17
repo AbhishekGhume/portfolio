@@ -1,9 +1,8 @@
 
-
 import React from 'react';
 import { motion } from 'motion/react';
 import { useInView } from 'react-intersection-observer';
-import { Cpu, Cloud, Gauge, Palette } from 'lucide-react';
+import { Code2, Cloud, Gauge, Workflow } from 'lucide-react';
 import SectionHeader from '../SectionHeader.jsx';
 import { sectionAccent } from '../../data/sectionAccents.js';
 
@@ -11,31 +10,45 @@ const PARAGRAPHS = [
   {
     body: (
       <>
-        I&apos;m a <span className='font-semibold text-slate-100'>fresher software engineer</span>{' '}
-        based in Pune, focused on backend systems, automation workflows, and AI-powered
-        applications. I work with{' '}
-        <span className='font-semibold text-slate-100'>Java, Spring Boot, REST APIs, databases,
-        and cloud platforms</span> to turn ideas into reliable software.
+        I&apos;m a{' '}
+        <span className='font-semibold text-slate-100'>
+          software engineer based in Pune
+        </span>
+        , focused on backend development, cloud-based systems, and automation
+        workflows. I work with{' '}
+        <span className='font-semibold text-slate-100'>
+          C#, .NET, Java, Spring Boot, REST APIs, databases, and Microsoft Azure
+        </span>{' '}
+        to build reliable and maintainable software solutions.
       </>
     ),
   },
   {
     body: (
       <>
-        The work I enjoy is practical and measurable — clean APIs, good data models, and systems
-        that stay maintainable as they grow. I like solving problems where{' '}
-        <span className='font-semibold text-slate-100'>performance, reliability, and clarity</span>{' '}
-        all matter at the same time.
+        I enjoy building practical systems that solve real-world problems, from
+        designing backend APIs to developing middleware workflows. My current
+        work involves{' '}
+        <span className='font-semibold text-slate-100'>
+          .NET and Azure services, including Azure Functions, Blob Storage, and
+          Azure Service Bus
+        </span>
+        , with a focus on file processing, asynchronous messaging, reliability,
+        and error handling.
       </>
     ),
   },
   {
     body: (
       <>
-        Off the clock, I build projects that use real-world stacks like{' '}
-        <span className='font-semibold text-slate-100'>Flutter, Supabase, Firebase, AWS, and
-        n8n</span>. That&apos;s where I explore product ideas, automation workflows, and deployment
-        patterns I can bring back into client work.
+        Beyond backend engineering, I explore technologies such as{' '}
+        <span className='font-semibold text-slate-100'>
+          React, Flutter, Firebase, AWS, and n8n
+        </span>{' '}
+        to build applications, experiment with automation, and understand
+        end-to-end software delivery. I&apos;m always looking to strengthen my
+        engineering skills and turn ideas into useful, production-oriented
+        solutions.
       </>
     ),
   },
@@ -43,29 +56,32 @@ const PARAGRAPHS = [
 
 const FOCUS = [
   {
-    icon: <Gauge size={20} />,
+    icon: <Code2 size={20} />,
     title: 'Backend engineering',
-    desc: 'REST APIs, Spring Boot services, and database-backed systems.',
+    desc: '.NET, ASP.NET Core Web APIs, Java, Spring Boot, and database-backed applications.',
   },
   {
-    icon: <Cpu size={20} />,
-    title: 'Automation & AI workflows',
-    desc: 'n8n flows, AI integrations, and practical productivity tooling.',
+    icon: <Workflow size={20} />,
+    title: 'Middleware & automation',
+    desc: 'File-processing workflows, asynchronous messaging, validation, retries, and error handling.',
   },
   {
     icon: <Cloud size={20} />,
     title: 'Cloud & deployment',
-    desc: 'Vercel, Render, AWS, and Firebase-backed application delivery.',
+    desc: 'Microsoft Azure, Azure Functions, Blob Storage, Azure Service Bus, AWS, and Firebase.',
   },
   {
-    icon: <Palette size={20} />,
-    title: 'Mobile & web apps',
-    desc: 'Flutter, React, and polished interfaces that feel production-ready.',
+    icon: <Gauge size={20} />,
+    title: 'Application development',
+    desc: 'React, Flutter, REST API integration, and maintainable web and mobile applications.',
   },
 ];
 
 const AboutSection = React.memo(() => {
-  const [ref, inView] = useInView({ triggerOnce: true, threshold: 0.15 });
+  const [ref, inView] = useInView({
+    triggerOnce: true,
+    threshold: 0.15,
+  });
 
   return (
     <section
@@ -89,16 +105,15 @@ const AboutSection = React.memo(() => {
               </>
             }
           >
-            {/* "Now" line — a live status echoing the hero's availability chip,
-                so the page opens with a current, specific signal of what I'm on. */}
+            {/* Current role */}
             <p className='mt-5 inline-flex items-center gap-2.5 font-mono text-sm text-slate-400'>
               <span className='relative flex h-2 w-2'>
                 <span className='absolute inline-flex h-full w-full animate-ping rounded-full bg-brand-400 opacity-75' />
                 <span className='relative inline-flex h-2 w-2 rounded-full bg-brand-400' />
               </span>
               <span>
-                <span className='text-slate-500'>Currently</span> — building backend and AI-powered
-                software at MulticoreWare
+                <span className='text-slate-500'>Currently</span> — working as
+                a Trainee Developer at Capita
               </span>
             </p>
 
@@ -137,8 +152,12 @@ const AboutSection = React.memo(() => {
                     {f.icon}
                   </span>
                   <div>
-                    <h3 className='text-base font-semibold text-white'>{f.title}</h3>
-                    <p className='mt-1 text-sm leading-relaxed text-slate-400'>{f.desc}</p>
+                    <h3 className='text-base font-semibold text-white'>
+                      {f.title}
+                    </h3>
+                    <p className='mt-1 text-sm leading-relaxed text-slate-400'>
+                      {f.desc}
+                    </p>
                   </div>
                 </div>
               </motion.div>

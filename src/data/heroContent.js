@@ -19,8 +19,7 @@ export const HERO_HEADLINE_ACCENT = 'backend';
 export const HERO_EYEBROW = 'Software Engineer · Pune, India';
 
 export const HERO_INTRO =
-  "I'm Abhishek — a Software Engineer from VIT Pune focused on backend systems, automation workflows, and AI-powered applications with Java, Spring Boot, REST APIs, databases, and cloud platforms. ";
-
+  "I'm Abhishek — a Software Engineer and VIT Pune graduate focused on backend development, cloud-based systems, and automation. I work with C#, .NET, Microsoft Azure, Java, Spring Boot, AWS, REST APIs, and databases to build reliable, scalable software solutions."
 /** The word in the intro rendered at a brighter weight. */
 export const HERO_INTRO_EMPHASIS = 'Abhishek';
 

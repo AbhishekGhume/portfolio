@@ -38,23 +38,17 @@ const TECHNOLOGIES = [
     icon: Code2,
     items: [
       { name: 'Java', description: 'Spring Boot services and APIs', icon: Java },
+      { name: 'C#', description: 'ASP .NET Core Web APIs', icon: Code2},
       { name: 'Kotlin', description: 'Android and JVM work', icon: Kotlin },
       { name: 'Python', description: 'Tooling, automation, and data/ML work', icon: Python },
-      { name: 'React', description: 'Component-driven UIs and dashboards', icon: ReactMark },
-      { name: 'Node.js', description: 'APIs, serverless functions, and tooling', icon: NodeJs },
-      { name: 'pytest', description: 'Test automation and profiling harnesses', icon: Pytest },
       { name: 'SQL', description: 'Relational design and queries', icon: Database },
-      {
-        name: 'Tailwind CSS',
-        description: 'Design systems and responsive styling',
-        icon: TailwindCss,
-      },
     ],
   },
   {
     category: 'Cloud & Platforms',
     icon: Cloud,
     items: [
+      { name: 'Microsoft Azure', description: 'Azure Functions, Blob Storage, and Service Bus', icon: Cloud },
       { name: 'AWS', description: 'Storage, deployment, and infrastructure', icon: Cloud },
       { name: 'Vercel', description: 'Frontend and preview deployments', icon: Cloud },
       { name: 'Render', description: 'Backend services and Docker deploys', icon: Server },
@@ -72,6 +66,7 @@ const TECHNOLOGIES = [
       { name: 'Postman', description: 'API testing and debugging', icon: Workflow },
       { name: 'VS Code', description: 'Primary development environment', icon: Laptop },
       { name: 'IntelliJ IDEA', description: 'Java and backend IDE', icon: Laptop },
+      { name: 'Visual Studio', description: '.NET development and debugging', icon: Laptop },
       { name: 'Android Studio', description: 'Android app development', icon: Monitor },
     ],
   },
