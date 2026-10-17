@@ -24,21 +24,33 @@ export const EXPERIENCE_DATA = [
     delay: 0.1,
   },
 
-  {
-    period: 'August 2026 - Present',
-    title: 'Trainee Developer',
-    company: 'Capita',
-    location: 'Pune, India',
-    logo: `${import.meta.env.BASE_URL}Capita.png`,
-    description:
-      'Software development and technology training focused on building practical solutions while developing skills in C# and Microsoft Azure.',
-    achievements: [
-      'Developing software engineering skills through hands-on training in C# and Microsoft Azure.',
-      'Learning to design, develop, and maintain applications using modern development practices and cloud technologies.',
-      'Working collaboratively in a professional technology environment while strengthening problem-solving, debugging, and software development skills.',
-    ],
-    tech: ['C#', 'Microsoft Azure'],
-    experience: 'Current',
-    delay: 0.2,
-  }
+  
+{
+  period: 'August 2026 - Present',
+  title: 'Trainee Developer',
+  company: 'Capita',
+  location: 'Pune, India',
+  logo: `${import.meta.env.BASE_URL}Capita.png`,
+  description:
+    'Developing backend applications and cloud-based middleware solutions using .NET and Microsoft Azure, focusing on reliable file processing and scalable workflows.',
+  achievements: [
+    'Developing backend services and REST APIs using C# and .NET, following structured application architecture and software engineering practices.',
+    'Building Azure-integrated workflows using Azure Functions, Blob Storage, and Azure Service Bus for file processing and asynchronous messaging.',
+    'Implementing file validation, duplicate detection, retry handling, and error management to improve processing reliability.',
+    'Working with SQL Server, application logging, and debugging to support data management and efficient troubleshooting.',
+  ],
+  tech: [
+    'C#',
+    '.NET',
+    'ASP.NET Core Web API',
+    'Microsoft Azure',
+    'Azure Functions',
+    'Azure Blob Storage',
+    'Azure Service Bus',
+    'SQL Server',
+  ],
+  experience: 'Current',
+  delay: 0.2,
+}
+
 ];
